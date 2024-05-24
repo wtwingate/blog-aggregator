@@ -2,7 +2,7 @@ package main
 
 import "net/http"
 
-func handlerReadiness(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerReadiness(w http.ResponseWriter, r *http.Request) {
 	payload := struct {
 		Status string `json:"status"`
 	}{
