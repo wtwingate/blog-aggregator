@@ -10,9 +10,10 @@ import (
 	"github.com/wtwingate/blog-aggregator/internal/database"
 )
 
-func (cfg *apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerCreateFeeds(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
+		Url  string `json:"url"`
 	}
 	params := parameters{}
 	decoder := json.NewDecoder(r.Body)
@@ -23,21 +24,19 @@ func (cfg *apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	feed, err := cfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 	if err != nil {
-		errMsg := fmt.Sprintf("could not create user: %v", err)
+		errMsg := fmt.Sprintf("could not create feed: %v", err)
 		respondWithError(w, http.StatusInternalServerError, errMsg)
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, dbUserToUser(user))
-}
-
-func (cfg *apiConfig) handlerGetUsers(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJSON(w, http.StatusOK, dbUserToUser(user))
+	respondWithJSON(w, http.StatusOK, dbFeedToFeed(feed))
 }

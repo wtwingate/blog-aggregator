@@ -42,7 +42,9 @@ func main() {
 	})
 
 	mux.HandleFunc("POST /v1/users", cfg.handlerCreateUsers)
-	mux.HandleFunc("GET /v1/users", cfg.handlerGetUsers)
+	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.handlerGetUsers))
+
+	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.handlerCreateFeeds))
 
 	mux.HandleFunc("/v1/readiness", cfg.handlerReadiness)
 	mux.HandleFunc("/v1/error", cfg.handlerError)
