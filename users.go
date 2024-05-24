@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -32,6 +33,24 @@ func (cfg *apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		errMsg := fmt.Sprintf("could not create user: %v\n", err)
 		respondWithError(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, dbUserToUser(user))
+}
+
+func (cfg *apiConfig) handlerGetUsers(w http.ResponseWriter, r *http.Request) {
+	apiKey := r.Header.Get("Authorization")
+	apiKey = strings.TrimPrefix(apiKey, "ApiKey ")
+	if len(apiKey) == 0 {
+		respondWithError(w, http.StatusUnauthorized, "missing API key")
+		return
+	}
+
+	user, err := cfg.DB.GetUserByApiKey(r.Context(), apiKey)
+	if err != nil {
+		errMsg := fmt.Sprintf("could not get user: %v\n", err)
+		respondWithError(w, http.StatusUnauthorized, errMsg)
 		return
 	}
 
