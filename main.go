@@ -24,5 +24,8 @@ func main() {
 		fmt.Fprintf(w, "hello, world\n")
 	})
 
+	mux.HandleFunc("/v1/readiness", handlerReadiness)
+	mux.HandleFunc("/v1/error", handlerError)
+
 	log.Fatal(srv.ListenAndServe())
 }
