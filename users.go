@@ -1,8 +1,8 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -10,31 +10,30 @@ import (
 	"github.com/wtwingate/blog-aggregator/internal/database"
 )
 
-type usersPost struct {
-	Name string `json:"name"`
-}
-
 func (cfg *apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Request) {
-	request := usersPost{}
-
+	type parameters struct {
+		Name string `json:"name"`
+	}
+	params := parameters{}
 	decoder := json.NewDecoder(r.Body)
-
-	err := decoder.Decode(&request)
+	err := decoder.Decode(&params)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		errMsg := fmt.Sprintf("could not decode parameters: %v\n", err)
+		respondWithError(w, http.StatusInternalServerError, errMsg)
+		return
 	}
 
-	ctx := context.Background()
-
-	response, err := cfg.DB.CreateUser(ctx, database.CreateUserParams{
+	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Name:      request.Name,
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		Name:      params.Name,
 	})
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, err.Error())
+		errMsg := fmt.Sprintf("could not create user: %v\n", err)
+		respondWithError(w, http.StatusInternalServerError, errMsg)
+		return
 	}
 
-	respondWithJSON(w, http.StatusOK, response)
+	respondWithJSON(w, http.StatusOK, dbUserToUser(user))
 }
