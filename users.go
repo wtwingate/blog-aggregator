@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/wtwingate/blog-aggregator/internal/auth"
 	"github.com/wtwingate/blog-aggregator/internal/database"
 )
 
@@ -40,10 +40,10 @@ func (cfg *apiConfig) handlerCreateUsers(w http.ResponseWriter, r *http.Request)
 }
 
 func (cfg *apiConfig) handlerGetUsers(w http.ResponseWriter, r *http.Request) {
-	apiKey := r.Header.Get("Authorization")
-	apiKey = strings.TrimPrefix(apiKey, "ApiKey ")
-	if len(apiKey) == 0 {
-		respondWithError(w, http.StatusUnauthorized, "missing API key")
+	apiKey, err := auth.GetApiKey(r)
+	if err != nil {
+		errMsg := fmt.Sprintf("could not get API key from header: %v\n", err)
+		respondWithError(w, http.StatusUnauthorized, errMsg)
 		return
 	}
 
