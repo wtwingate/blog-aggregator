@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -37,17 +36,17 @@ func main() {
 		Handler: mux,
 	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "hello, world\n")
-	})
-
 	mux.HandleFunc("POST /v1/users", cfg.handlerCreateUsers)
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.handlerGetUsers))
 
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.handlerCreateFeeds))
 	mux.HandleFunc("GET /v1/feeds", cfg.handlerGetFeeds)
 
+	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.handlerCreateFeedFollows))
+	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", cfg.middlewareAuth(cfg.handlerDeleteFeedFollows))
+
 	mux.HandleFunc("/v1/readiness", cfg.handlerReadiness)
+
 	mux.HandleFunc("/v1/error", cfg.handlerError)
 
 	log.Fatal(srv.ListenAndServe())
