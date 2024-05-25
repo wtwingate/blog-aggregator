@@ -45,6 +45,7 @@ func main() {
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.handlerGetUsers))
 
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.handlerCreateFeeds))
+	mux.HandleFunc("GET /v1/feeds", cfg.handlerGetFeeds)
 
 	mux.HandleFunc("/v1/readiness", cfg.handlerReadiness)
 	mux.HandleFunc("/v1/error", cfg.handlerError)
