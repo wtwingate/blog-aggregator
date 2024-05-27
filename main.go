@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -49,6 +50,14 @@ func main() {
 	mux.HandleFunc("/v1/readiness", cfg.handlerReadiness)
 
 	mux.HandleFunc("/v1/error", cfg.handlerError)
+
+	ticker := time.NewTicker(60 * time.Second)
+	defer ticker.Stop()
+	go func() {
+		for range ticker.C {
+			cfg.fetchWorker(10)
+		}
+	}()
 
 	log.Fatal(srv.ListenAndServe())
 }
