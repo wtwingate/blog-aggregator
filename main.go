@@ -51,7 +51,7 @@ func main() {
 
 	mux.HandleFunc("/v1/error", cfg.handlerError)
 
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 	go func() {
 		for range ticker.C {

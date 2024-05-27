@@ -27,6 +27,7 @@ type Channel struct {
 type Item struct {
 	Title       string `xml:"title"`
 	Link        string `xml:"link"`
+	PubDate     string `xml:"pubDate"`
 	Description string `xml:"description"`
 }
 
@@ -70,13 +71,11 @@ func (cfg *apiConfig) fetchWorker(numFeeds int) {
 
 	var wg sync.WaitGroup
 
-	ch := make(chan Rss, numFeeds)
-
 	for _, feed := range feedsToFetch {
 		log.Printf("fetching data from %v\n", feed.Name)
 
 		wg.Add(1)
-		go func(feed database.Feed, ch chan Rss) {
+		go func(feed database.Feed) {
 			defer wg.Done()
 
 			rss, err := fetchDataFromFeed(feed.Url)
@@ -95,13 +94,13 @@ func (cfg *apiConfig) fetchWorker(numFeeds int) {
 			if err != nil {
 				log.Printf("could not update feed: %v", err)
 			}
-			ch <- rss
-		}(feed, ch)
+			for _, item := range rss.Channel.Items {
+				err = cfg.createNewPost(item, feed.ID)
+				if err != nil {
+					log.Printf("could not create new post: %v", err)
+				}
+			}
+		}(feed)
 		wg.Wait()
-	}
-
-	for range numFeeds {
-		rss := <-ch
-		log.Println(rss.Channel.Title)
 	}
 }
