@@ -23,7 +23,7 @@ func (cfg *apiConfig) handlerCreateFeedFollows(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	usersFeed, err := cfg.DB.CreateUsersFeeds(r.Context(), database.CreateUsersFeedsParams{
+	feedFollows, err := cfg.DB.CreateFeedFollows(r.Context(), database.CreateFeedFollowsParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
@@ -36,7 +36,17 @@ func (cfg *apiConfig) handlerCreateFeedFollows(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, dbUsersFeedToFeedFollow(usersFeed))
+	respondWithJSON(w, http.StatusCreated, toFeedFollow(feedFollows))
+}
+
+func (cfg *apiConfig) handlerGetFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
+	feedFollows, err := cfg.DB.GetFeedFollows(r.Context(), user.ID)
+	if err != nil {
+		errMsg := fmt.Sprintf("could not get feed follows: %v", err)
+		respondWithError(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+	respondWithJSON(w, http.StatusOK, toFeedFollowSlice(feedFollows))
 }
 
 func (cfg *apiConfig) handlerDeleteFeedFollows(w http.ResponseWriter, r *http.Request, user database.User) {
@@ -53,7 +63,7 @@ func (cfg *apiConfig) handlerDeleteFeedFollows(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	err = cfg.DB.DeleteUsersFeeds(r.Context(), feedFollowID)
+	err = cfg.DB.DeleteFeedFollows(r.Context(), feedFollowID)
 	if err != nil {
 		errMsg := fmt.Sprintf("could not delete feed follow: %v", err)
 		respondWithError(w, http.StatusInternalServerError, errMsg)

@@ -15,7 +15,7 @@ type User struct {
 	ApiKey    string    `json:"api_key"`
 }
 
-func dbUserToUser(user database.User) User {
+func toUser(user database.User) User {
 	return User{
 		ID:        user.ID,
 		CreatedAt: user.CreatedAt,
@@ -34,7 +34,7 @@ type Feed struct {
 	UserID    uuid.UUID `json:"user_id"`
 }
 
-func dbFeedToFeed(feed database.Feed) Feed {
+func toFeed(feed database.Feed) Feed {
 	return Feed{
 		ID:        feed.ID,
 		CreatedAt: feed.CreatedAt,
@@ -45,11 +45,10 @@ func dbFeedToFeed(feed database.Feed) Feed {
 	}
 }
 
-func dbFeedsToFeeds(dbFeeds []database.Feed) []Feed {
+func toFeedSlice(feedSlice []database.Feed) []Feed {
 	feeds := []Feed{}
-	for _, dbf := range dbFeeds {
-		f := dbFeedToFeed(dbf)
-		feeds = append(feeds, f)
+	for _, f := range feedSlice {
+		feeds = append(feeds, toFeed(f))
 	}
 	return feeds
 }
@@ -62,12 +61,20 @@ type FeedFollow struct {
 	FeedID    uuid.UUID `json:"feed_id"`
 }
 
-func dbUsersFeedToFeedFollow(usersFeed database.UsersFeed) FeedFollow {
+func toFeedFollow(feedFollows database.FeedFollow) FeedFollow {
 	return FeedFollow{
-		ID:        usersFeed.ID,
-		CreatedAt: usersFeed.CreatedAt,
-		UpdatedAt: usersFeed.CreatedAt,
-		UserID:    usersFeed.UserID,
-		FeedID:    usersFeed.FeedID,
+		ID:        feedFollows.ID,
+		CreatedAt: feedFollows.CreatedAt,
+		UpdatedAt: feedFollows.CreatedAt,
+		UserID:    feedFollows.UserID,
+		FeedID:    feedFollows.FeedID,
 	}
+}
+
+func toFeedFollowSlice(usersFeedSlice []database.FeedFollow) []FeedFollow {
+	feedFollows := []FeedFollow{}
+	for _, ff := range usersFeedSlice {
+		feedFollows = append(feedFollows, toFeedFollow(ff))
+	}
+	return feedFollows
 }
