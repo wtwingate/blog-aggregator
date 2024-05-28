@@ -73,10 +73,42 @@ func toFeedFollow(feedFollows database.FeedFollow) FeedFollow {
 	}
 }
 
-func toFeedFollowSlice(usersFeedSlice []database.FeedFollow) []FeedFollow {
+func toFeedFollowSlice(feedFollowSlice []database.FeedFollow) []FeedFollow {
 	feedFollows := []FeedFollow{}
-	for _, ff := range usersFeedSlice {
+	for _, ff := range feedFollowSlice {
 		feedFollows = append(feedFollows, toFeedFollow(ff))
 	}
 	return feedFollows
+}
+
+type Post struct {
+	ID          uuid.UUID `json:"id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Title       string    `json:"title"`
+	Url         string    `json:"url"`
+	Description *string   `json:"description"`
+	PublishedAt time.Time `json:"published_at"`
+	FeedID      uuid.UUID `json:"feed_id"`
+}
+
+func toPost(post database.Post) Post {
+	return Post{
+		ID:          post.ID,
+		CreatedAt:   post.CreatedAt,
+		UpdatedAt:   post.UpdatedAt,
+		Title:       post.Title,
+		Url:         post.Url,
+		Description: &post.Description.String,
+		PublishedAt: post.PublishedAt,
+		FeedID:      post.FeedID,
+	}
+}
+
+func toPostSlice(postSlice []database.Post) []Post {
+	posts := []Post{}
+	for _, post := range postSlice {
+		posts = append(posts, toPost(post))
+	}
+	return posts
 }

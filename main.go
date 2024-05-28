@@ -32,32 +32,29 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: mux,
-	}
-
 	mux.HandleFunc("POST /v1/users", cfg.handlerCreateUsers)
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.handlerGetUsers))
-
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.handlerCreateFeeds))
 	mux.HandleFunc("GET /v1/feeds", cfg.handlerGetFeeds)
-
 	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.handlerCreateFeedFollows))
 	mux.HandleFunc("GET /v1/feed_follows", cfg.middlewareAuth(cfg.handlerGetFeedFollows))
 	mux.HandleFunc("DELETE /v1/feed_follows/{feedFollowID}", cfg.middlewareAuth(cfg.handlerDeleteFeedFollows))
-
+	mux.HandleFunc("GET /v1/posts", cfg.middlewareAuth(cfg.handlerGetPosts))
 	mux.HandleFunc("/v1/readiness", cfg.handlerReadiness)
-
 	mux.HandleFunc("/v1/error", cfg.handlerError)
 
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	defer ticker.Stop()
 	go func() {
 		for range ticker.C {
 			cfg.fetchWorker(10)
 		}
 	}()
+
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: mux,
+	}
 
 	log.Fatal(srv.ListenAndServe())
 }

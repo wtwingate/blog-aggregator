@@ -5,12 +5,34 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"github.com/wtwingate/blog-aggregator/internal/database"
 )
+
+func (cfg *apiConfig) handlerGetPosts(w http.ResponseWriter, r *http.Request, user database.User) {
+	params := r.URL.Query()
+	limit, err := strconv.Atoi(params.Get("limit"))
+	if err != nil {
+		limit = 20
+	}
+
+	posts, err := cfg.DB.GetPostsByUser(r.Context(), database.GetPostsByUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		errMsg := fmt.Sprintf("could not get posts: %v", err)
+		respondWithError(w, http.StatusInternalServerError, errMsg)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, toPostSlice(posts))
+}
 
 func (cfg *apiConfig) createNewPost(item Item, feedID uuid.UUID) error {
 	ctx := context.Background()
